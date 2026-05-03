@@ -1,0 +1,19 @@
+info:
+  name: tenant-info
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{base_url}}/tenant-info?id={{tenant_id}}"
+  params:
+    - name: id
+      value: "{{tenant_id}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

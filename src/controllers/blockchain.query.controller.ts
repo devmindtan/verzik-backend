@@ -6,7 +6,7 @@
 import { Request, Response } from "express";
 import { BlockchainQueryService } from "../services/blockchain.query.service";
 import { asyncHandler } from "../middlewares/errorHandler";
-import { ApiErrors, ApiError } from "../utils/errors";
+import { ApiErrors } from "../utils/errors";
 import { successResponse } from "../utils/response";
 import {
   parseListQuery,
@@ -55,6 +55,58 @@ export const getTenants = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
+export const getProtocolInitializeds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getProtocolInitializeds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getTenantStatusUpdateds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getTenantStatusUpdateds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getMinOperatorStakeUpdateds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getMinOperatorStakeUpdateds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getUnstakeCooldownUpdateds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getUnstakeCooldownUpdateds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
 export const getPenalties = asyncHandler(
   async (req: Request, res: Response) => {
     const { limit, offset } = parseListQuery(req.query);
@@ -94,6 +146,32 @@ export const getDocumentQualifieds = asyncHandler(
   async (req: Request, res: Response) => {
     const { limit, offset } = parseListQuery(req.query);
     const result = await queryService.getDocumentCoSignQualifieds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getDocumentCoSigneds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getDocumentCoSigneds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getDocumentRevokeds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getDocumentRevokeds(limit);
     return res.status(200).json(
       successResponse(result || [], {
         limit,
@@ -145,7 +223,7 @@ export const getOperatorHardSlasheds = asyncHandler(
 export const getOperatorSoftSlasheds = asyncHandler(
   async (req: Request, res: Response) => {
     const { limit, offset } = parseListQuery(req.query);
-    const result = await queryService.getOperatorSoftSlashed(limit);
+    const result = await queryService.getOperatorSoftSlasheds(limit);
     return res.status(200).json(
       successResponse(result || [], {
         limit,
@@ -172,6 +250,98 @@ export const getOperatorUnstakeds = asyncHandler(
   async (req: Request, res: Response) => {
     const { limit, offset } = parseListQuery(req.query);
     const result = await queryService.getOperatorUnstakeds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getOperatorMetadataUpdateds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getOperatorMetadataUpdateds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getOperatorStatusUpdateds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getOperatorStatusUpdateds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getOperatorStakeToppedUps = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getOperatorStakeToppedUps(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getOperatorRecoveryDelegateUpdateds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result =
+      await queryService.getOperatorRecoveryDelegateUpdateds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getOperatorRecovereds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getOperatorRecovereds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getOperatorRecoveryAliasUpdateds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getOperatorRecoveryAliasUpdateds(limit);
+    return res.status(200).json(
+      successResponse(result || [], {
+        limit,
+        offset,
+      }),
+    );
+  },
+);
+
+export const getTreasuryUpdateds = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { limit, offset } = parseListQuery(req.query);
+    const result = await queryService.getTreasuryUpdateds(limit);
     return res.status(200).json(
       successResponse(result || [], {
         limit,
@@ -335,6 +505,216 @@ export const getOperatorStatus = asyncHandler(
     );
     if (!result) {
       throw ApiErrors.notFound("Operator");
+    }
+
+    return res.status(200).json(successResponse(result));
+  },
+);
+
+export const getNonceCountById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { tenantId, operator, signer } = req.query;
+    const resolvedOperator = (operator || signer) as string | undefined;
+
+    if (!tenantId || !resolvedOperator) {
+      throw ApiErrors.badRequest(
+        "tenantId and operator (or signer) are required",
+      );
+    }
+
+    const count = await queryService.getNonceCount(
+      tenantId as string,
+      resolvedOperator,
+    );
+    return res.status(200).json(
+      successResponse({
+        tenantId,
+        operator: resolvedOperator,
+        nonce: count,
+      }),
+    );
+  },
+);
+
+export const verifyDocumentStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { tenantId, fileHash } = req.query;
+
+    if (!tenantId || !fileHash) {
+      throw ApiErrors.badRequest("tenantId and fileHash are required");
+    }
+
+    const result = await queryService.verifyDocument(
+      tenantId as string,
+      fileHash as string,
+    );
+    if (!result) {
+      throw ApiErrors.notFound("Document");
+    }
+
+    return res.status(200).json(successResponse(result));
+  },
+);
+
+export const getHasSignedDocument = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { tenantId, fileHash, signer } = req.query;
+
+    if (!tenantId || !fileHash || !signer) {
+      throw ApiErrors.badRequest("tenantId, fileHash and signer are required");
+    }
+
+    const hasSigned = await queryService.hasSignedDocument(
+      tenantId as string,
+      fileHash as string,
+      signer as string,
+    );
+
+    return res.status(200).json(
+      successResponse({
+        tenantId,
+        fileHash,
+        signer,
+        hasSigned,
+      }),
+    );
+  },
+);
+
+export const getIsDocumentCoSignQualified = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { tenantId, fileHash } = req.query;
+
+    if (!tenantId || !fileHash) {
+      throw ApiErrors.badRequest("tenantId and fileHash are required");
+    }
+
+    const qualified = await queryService.isDocumentCoSignQualified(
+      tenantId as string,
+      fileHash as string,
+    );
+
+    return res.status(200).json(
+      successResponse({
+        tenantId,
+        fileHash,
+        qualified,
+      }),
+    );
+  },
+);
+
+export const getCoSignStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { tenantId, fileHash } = req.query;
+
+    if (!tenantId || !fileHash) {
+      throw ApiErrors.badRequest("tenantId and fileHash are required");
+    }
+
+    const result = await queryService.getCoSignStatus(
+      tenantId as string,
+      fileHash as string,
+    );
+    if (!result) {
+      throw ApiErrors.notFound("Document");
+    }
+
+    return res.status(200).json(successResponse(result));
+  },
+);
+
+export const getCoSignPolicyCurrent = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { tenantId, docType } = req.query;
+
+    if (!tenantId || docType === undefined) {
+      throw ApiErrors.badRequest("tenantId and docType are required");
+    }
+
+    const parsedDocType = Number(docType);
+    if (!Number.isInteger(parsedDocType) || parsedDocType < 0) {
+      throw ApiErrors.badRequest("docType must be a non-negative integer");
+    }
+
+    const result = await queryService.getCoSignPolicy(
+      tenantId as string,
+      parsedDocType,
+    );
+    if (!result) {
+      throw ApiErrors.notFound("CoSignPolicy");
+    }
+
+    return res.status(200).json(successResponse(result));
+  },
+);
+
+export const getCoSignOperatorConfigCurrent = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { tenantId, docType, operator } = req.query;
+
+    if (!tenantId || docType === undefined || !operator) {
+      throw ApiErrors.badRequest("tenantId, docType and operator are required");
+    }
+
+    const parsedDocType = Number(docType);
+    if (!Number.isInteger(parsedDocType) || parsedDocType < 0) {
+      throw ApiErrors.badRequest("docType must be a non-negative integer");
+    }
+
+    const result = await queryService.getCoSignOperatorConfig(
+      tenantId as string,
+      parsedDocType,
+      operator as string,
+    );
+    if (!result) {
+      throw ApiErrors.notFound("CoSignOperatorConfig");
+    }
+
+    return res.status(200).json(successResponse(result));
+  },
+);
+
+export const getCurrentViolationPenalty = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { tenantId, violationCode } = req.query;
+
+    if (!tenantId || !violationCode) {
+      throw ApiErrors.badRequest("tenantId and violationCode are required");
+    }
+
+    const penaltyBps = await queryService.getCurrentViolationPenalty(
+      tenantId as string,
+      violationCode as string,
+    );
+    if (penaltyBps === null) {
+      throw ApiErrors.notFound("ViolationPenalty");
+    }
+
+    return res.status(200).json(
+      successResponse({
+        tenantId,
+        violationCode,
+        penaltyBps,
+      }),
+    );
+  },
+);
+
+export const getRecoveryAliasStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { tenantId, operator } = req.query;
+
+    if (!tenantId || !operator) {
+      throw ApiErrors.badRequest("tenantId and operator are required");
+    }
+
+    const result = await queryService.getRecoveryAliasStatus(
+      tenantId as string,
+      operator as string,
+    );
+    if (!result) {
+      throw ApiErrors.notFound("RecoveryAliasStatus");
     }
 
     return res.status(200).json(successResponse(result));

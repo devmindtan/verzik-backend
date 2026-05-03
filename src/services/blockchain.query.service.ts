@@ -1,5 +1,7 @@
 import { BlockchainQueryClient } from "../configs/blockchain.query.config";
 import type {
+  DocumentCoSigned,
+  DocumentRevoked,
   TenantCreated,
   OperatorJoined,
   ViolationPenaltyUpdated,
@@ -7,12 +9,23 @@ import type {
   EnhancedTxResult,
   CoSignOperatorConfigured,
   CoSignPolicyUpdated,
+  MinOperatorStakeUpdated,
+  OperatorMetadataUpdated,
+  OperatorRecovered,
+  OperatorRecoveryAliasUpdated,
+  OperatorRecoveryDelegateUpdated,
   OperatorSlashed,
   OperatorSoftSlashed,
+  OperatorStakeToppedUp,
+  OperatorStatusUpdated,
   OperatorUnstakeRequested,
   OperatorUnstaked,
   OperatorStatus,
+  ProtocolInitialized,
   TenantInfo,
+  TenantStatusUpdated,
+  TreasuryUpdated,
+  UnstakeCooldownUpdated,
   DocumentSnapshot,
 } from "@verzik/sdk";
 import type { DataResponseWithTotal } from "../types/graph.type";
@@ -20,6 +33,14 @@ export class BlockchainQueryService {
   private queryClient: BlockchainQueryClient;
   constructor() {
     this.queryClient = new BlockchainQueryClient();
+  }
+
+  private toSafeJson<T>(data: T): T {
+    return JSON.parse(
+      JSON.stringify(data, (_key, value) =>
+        typeof value === "bigint" ? value.toString() : value,
+      ),
+    ) as T;
   }
 
   async getTenantCount(): Promise<number> {
@@ -50,12 +71,7 @@ export class BlockchainQueryService {
     try {
       const directQuery = await this.queryClient.getDirectQuery();
       const data = await directQuery.getTransactionByHash(txHash);
-      const safeData = JSON.parse(
-        JSON.stringify(data, (key, value) =>
-          typeof value === "bigint" ? value.toString() : value,
-        ),
-      );
-      return safeData;
+      return this.toSafeJson(data);
     } catch (error) {
       console.error("Service Error [getTransactionByHash]:", error);
       return null;
@@ -104,16 +120,18 @@ export class BlockchainQueryService {
       return [];
     }
   }
-  async getOperatorSoftSlashed(first?: number): Promise<OperatorSoftSlashed[]> {
+  async getOperatorSoftSlasheds(
+    first?: number,
+  ): Promise<OperatorSoftSlashed[]> {
     try {
       const data = await this.queryClient.getSelectedQueries(
-        ["getOperatorSoftSlashed"],
+        ["getOperatorSoftSlasheds"],
         first,
       );
       const result = data as Record<string, any>;
-      return result["getOperatorSoftSlashed"];
+      return result["getOperatorSoftSlasheds"];
     } catch (error) {
-      console.error("Service Error [getOperatorSoftSlashed]:", error);
+      console.error("Service Error [getOperatorSoftSlasheds]:", error);
       return [];
     }
   }
@@ -168,9 +186,133 @@ export class BlockchainQueryService {
     try {
       const directQuery = await this.queryClient.getDirectQuery();
       const data = await directQuery.getDocumentStatus(tenantId, fileHash);
-      return data;
+      return this.toSafeJson(data);
     } catch (error) {
       console.error("Service Error [getDocumentStatus]:", error);
+      return null;
+    }
+  }
+
+  async verifyDocument(
+    tenantId: string,
+    fileHash: string,
+  ): Promise<{
+    exists: boolean;
+    isValid: boolean;
+    issuer: string;
+    cid: string;
+  } | null> {
+    try {
+      const directQuery = await this.queryClient.getDirectQuery();
+      const data = await directQuery.verify(tenantId, fileHash);
+      return this.toSafeJson(data);
+    } catch (error) {
+      console.error("Service Error [verifyDocument]:", error);
+      return null;
+    }
+  }
+
+  async hasSignedDocument(
+    tenantId: string,
+    fileHash: string,
+    signer: string,
+  ): Promise<boolean> {
+    try {
+      const directQuery = await this.queryClient.getDirectQuery();
+      return await directQuery.hasSignedDocument(tenantId, fileHash, signer);
+    } catch (error) {
+      console.error("Service Error [hasSignedDocument]:", error);
+      return false;
+    }
+  }
+
+  async isDocumentCoSignQualified(
+    tenantId: string,
+    fileHash: string,
+  ): Promise<boolean> {
+    try {
+      const directQuery = await this.queryClient.getDirectQuery();
+      return await directQuery.isDocumentCoSignQualified(tenantId, fileHash);
+    } catch (error) {
+      console.error("Service Error [isDocumentCoSignQualified]:", error);
+      return false;
+    }
+  }
+
+  async getCoSignStatus(
+    tenantId: string,
+    fileHash: string,
+  ): Promise<Record<string, unknown> | null> {
+    try {
+      const directQuery = await this.queryClient.getDirectQuery();
+      const data = await directQuery.getCoSignStatus(tenantId, fileHash);
+      return this.toSafeJson(data as unknown as Record<string, unknown>);
+    } catch (error) {
+      console.error("Service Error [getCoSignStatus]:", error);
+      return null;
+    }
+  }
+
+  async getCoSignPolicy(
+    tenantId: string,
+    docType: number,
+  ): Promise<Record<string, unknown> | null> {
+    try {
+      const directQuery = await this.queryClient.getDirectQuery();
+      const data = await directQuery.getCoSignPolicy(tenantId, docType);
+      return this.toSafeJson(data as unknown as Record<string, unknown>);
+    } catch (error) {
+      console.error("Service Error [getCoSignPolicy]:", error);
+      return null;
+    }
+  }
+
+  async getCoSignOperatorConfig(
+    tenantId: string,
+    docType: number,
+    operator: string,
+  ): Promise<{ whitelisted: boolean; roleId: number } | null> {
+    try {
+      const directQuery = await this.queryClient.getDirectQuery();
+      const data = await directQuery.getCoSignOperatorConfig(
+        tenantId,
+        docType,
+        operator,
+      );
+      return data;
+    } catch (error) {
+      console.error("Service Error [getCoSignOperatorConfig]:", error);
+      return null;
+    }
+  }
+
+  async getCurrentViolationPenalty(
+    tenantId: string,
+    violationCode: string,
+  ): Promise<number | null> {
+    try {
+      const directQuery = await this.queryClient.getDirectQuery();
+      const data = await directQuery.getViolationPenalty(
+        tenantId,
+        violationCode,
+      );
+      return data;
+    } catch (error) {
+      console.error("Service Error [getCurrentViolationPenalty]:", error);
+      return null;
+    }
+  }
+
+  async getRecoveryAliasStatus(
+    tenantId: string,
+    operator: string,
+  ): Promise<Record<string, unknown> | null> {
+    try {
+      const directQuery = await this.queryClient.getDirectQuery();
+      const data = await directQuery.getRecoveryAliasStatus(tenantId, operator);
+      return this.toSafeJson(data as Record<string, unknown>);
+    } catch (error) {
+      console.error("Service Error [getRecoveryAliasStatus]:", error);
       return null;
     }
   }
@@ -181,7 +323,7 @@ export class BlockchainQueryService {
     try {
       const directQuery = await this.queryClient.getDirectQuery();
       const data = await directQuery.getOperatorStatus(tenantId, operator);
-      return data;
+      return this.toSafeJson(data);
     } catch (error) {
       console.error("Service Error [getOperatorStatus]:", error);
       return null;
@@ -191,7 +333,7 @@ export class BlockchainQueryService {
     try {
       const directQuery = await this.queryClient.getDirectQuery();
       const data = await directQuery.getTenantInfo(tenantId);
-      return data;
+      return this.toSafeJson(data);
     } catch (error) {
       console.error("Service Error [getTenantInfo]:", error);
       return null;
@@ -275,6 +417,209 @@ export class BlockchainQueryService {
       return result["getTenantCreateds"];
     } catch (error) {
       console.error("Service Error [getTenantCreateds]:", error);
+      return [];
+    }
+  }
+
+  async getProtocolInitializeds(
+    first?: number,
+  ): Promise<ProtocolInitialized[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getProtocolInitializeds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getProtocolInitializeds"];
+    } catch (error) {
+      console.error("Service Error [getProtocolInitializeds]:", error);
+      return [];
+    }
+  }
+
+  async getTenantStatusUpdateds(
+    first?: number,
+  ): Promise<TenantStatusUpdated[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getTenantStatusUpdateds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getTenantStatusUpdateds"];
+    } catch (error) {
+      console.error("Service Error [getTenantStatusUpdateds]:", error);
+      return [];
+    }
+  }
+
+  async getMinOperatorStakeUpdateds(
+    first?: number,
+  ): Promise<MinOperatorStakeUpdated[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getMinOperatorStakeUpdateds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getMinOperatorStakeUpdateds"];
+    } catch (error) {
+      console.error("Service Error [getMinOperatorStakeUpdateds]:", error);
+      return [];
+    }
+  }
+
+  async getUnstakeCooldownUpdateds(
+    first?: number,
+  ): Promise<UnstakeCooldownUpdated[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getUnstakeCooldownUpdateds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getUnstakeCooldownUpdateds"];
+    } catch (error) {
+      console.error("Service Error [getUnstakeCooldownUpdateds]:", error);
+      return [];
+    }
+  }
+
+  async getOperatorMetadataUpdateds(
+    first?: number,
+  ): Promise<OperatorMetadataUpdated[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getOperatorMetadataUpdateds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getOperatorMetadataUpdateds"];
+    } catch (error) {
+      console.error("Service Error [getOperatorMetadataUpdateds]:", error);
+      return [];
+    }
+  }
+
+  async getOperatorStatusUpdateds(
+    first?: number,
+  ): Promise<OperatorStatusUpdated[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getOperatorStatusUpdateds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getOperatorStatusUpdateds"];
+    } catch (error) {
+      console.error("Service Error [getOperatorStatusUpdateds]:", error);
+      return [];
+    }
+  }
+
+  async getOperatorStakeToppedUps(
+    first?: number,
+  ): Promise<OperatorStakeToppedUp[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getOperatorStakeToppedUps"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getOperatorStakeToppedUps"];
+    } catch (error) {
+      console.error("Service Error [getOperatorStakeToppedUps]:", error);
+      return [];
+    }
+  }
+
+  async getOperatorRecoveryDelegateUpdateds(
+    first?: number,
+  ): Promise<OperatorRecoveryDelegateUpdated[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getOperatorRecoveryDelegateUpdateds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getOperatorRecoveryDelegateUpdateds"];
+    } catch (error) {
+      console.error(
+        "Service Error [getOperatorRecoveryDelegateUpdateds]:",
+        error,
+      );
+      return [];
+    }
+  }
+
+  async getOperatorRecovereds(first?: number): Promise<OperatorRecovered[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getOperatorRecovereds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getOperatorRecovereds"];
+    } catch (error) {
+      console.error("Service Error [getOperatorRecovereds]:", error);
+      return [];
+    }
+  }
+
+  async getOperatorRecoveryAliasUpdateds(
+    first?: number,
+  ): Promise<OperatorRecoveryAliasUpdated[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getOperatorRecoveryAliasUpdateds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getOperatorRecoveryAliasUpdateds"];
+    } catch (error) {
+      console.error("Service Error [getOperatorRecoveryAliasUpdateds]:", error);
+      return [];
+    }
+  }
+
+  async getTreasuryUpdateds(first?: number): Promise<TreasuryUpdated[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getTreasuryUpdateds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getTreasuryUpdateds"];
+    } catch (error) {
+      console.error("Service Error [getTreasuryUpdateds]:", error);
+      return [];
+    }
+  }
+
+  async getDocumentCoSigneds(first?: number): Promise<DocumentCoSigned[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getDocumentCoSigneds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getDocumentCoSigneds"];
+    } catch (error) {
+      console.error("Service Error [getDocumentCoSigneds]:", error);
+      return [];
+    }
+  }
+
+  async getDocumentRevokeds(first?: number): Promise<DocumentRevoked[]> {
+    try {
+      const data = await this.queryClient.getSelectedQueries(
+        ["getDocumentRevokeds"],
+        first,
+      );
+      const result = data as Record<string, any>;
+      return result["getDocumentRevokeds"];
+    } catch (error) {
+      console.error("Service Error [getDocumentRevokeds]:", error);
       return [];
     }
   }

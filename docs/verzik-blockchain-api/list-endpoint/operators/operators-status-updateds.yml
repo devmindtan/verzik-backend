@@ -1,0 +1,15 @@
+info:
+  name: operators/status-updateds
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{base_url}}/operators/status-updateds"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

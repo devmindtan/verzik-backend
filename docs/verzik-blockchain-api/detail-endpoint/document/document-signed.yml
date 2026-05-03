@@ -1,0 +1,25 @@
+info:
+  name: document-signed
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{base_url}}/document-signed?tenantId={{tenant_id}}&fileHash={{file_hash}}&signer={{operator}}"
+  params:
+    - name: tenantId
+      value: "{{tenant_id}}"
+      type: query
+    - name: fileHash
+      value: "{{file_hash}}"
+      type: query
+    - name: signer
+      value: "{{operator}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

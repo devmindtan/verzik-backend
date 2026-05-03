@@ -1,0 +1,22 @@
+info:
+  name: document-status
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{base_url}}/document-status?tenantId={{tenant_id}}&fileHash={{file_hash}}"
+  params:
+    - name: tenantId
+      value: "{{tenant_id}}"
+      type: query
+    - name: fileHash
+      value: "{{file_hash}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

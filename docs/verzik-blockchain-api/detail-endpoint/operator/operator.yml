@@ -1,0 +1,22 @@
+info:
+  name: operator
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{base_url}}/operator?operator={{operator}}&tenantId={{tenant_id}}"
+  params:
+    - name: operator
+      value: "{{operator}}"
+      type: query
+    - name: tenantId
+      value: "{{tenant_id}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
