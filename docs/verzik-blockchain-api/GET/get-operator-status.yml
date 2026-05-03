@@ -1,0 +1,22 @@
+info:
+  name: get-operator-status
+  type: http
+  seq: 22
+
+http:
+  method: GET
+  url: "{{base_url}}/operator-status?tenantId={{tenant_id}}&operator={{operator}}"
+  params:
+    - name: tenantId
+      value: "{{tenant_id}}"
+      type: query
+    - name: operator
+      value: "{{operator}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

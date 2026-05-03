@@ -1,0 +1,34 @@
+opencollection: 1.0.0
+
+info:
+  name: verzik-blockchain-api
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: tenant_id
+      value: "0xc5396dec48dd369660d2dcc0514727e58caf1655ff0c8c6c9d26f2e6e10464f6"
+    - name: file_hash
+      value: "0x2808a2ff94d77f5fc2638f879e891b89a81a14b77977b25f074faa6e1bd12345"
+    - name: operator
+      value: "0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f"
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
+    presets:
+      request:
+        type: http
+        url: http://localhost:3000/api/v1/blockchain/

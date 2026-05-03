@@ -1,0 +1,21 @@
+info:
+  name: post-check-permission
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:3000/api/check-permission
+  body:
+    type: json
+    data: |-
+      {
+        "address":"0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
