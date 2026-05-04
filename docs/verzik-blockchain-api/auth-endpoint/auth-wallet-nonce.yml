@@ -1,0 +1,21 @@
+info:
+  name: auth/wallet/nonce
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/auth/wallet/nonce"
+  body:
+    type: json
+    data: |-
+      {
+        "address":"0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

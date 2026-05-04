@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verzik Wallet Connect</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #1a1a1a;
+        color: #e0e0e0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .card {
+        background: #2d2d2d;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        width: 400px;
+        text-align: center;
+        border: 1px solid #444;
+      }
+      button {
+        background: #6366f1;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.3s;
+        width: 100%;
+      }
+      button:hover {
+        background: #4f46e5;
+      }
+      .info {
+        margin-top: 20px;
+        text-align: left;
+        background: #1e1e1e;
+        padding: 15px;
+        border-radius: 8px;
+        font-family: monospace;
+        font-size: 0.9rem;
+        border-left: 4px solid #6366f1;
+        display: none;
+      }
+      .error {
+        color: #f87171;
+        font-size: 0.8rem;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Verzik Connection</h2>
+      <p id="status">Chưa kết nối ví</p>
+      <button id="connectBtn">Kết nối MetaMask</button>
+
+      <div id="infoBox" class="info">
+        <div><strong>Địa chỉ:</strong> <span id="addr"></span></div>
+        <div><strong>Số dư:</strong> <span id="balance"></span> ETH</div>
+        <div><strong>Network:</strong> <span id="network"></span></div>
+      </div>
+      <p id="errorMsg" class="error"></p>
+    </div>
+
+    <!-- Load Ethers.js v6 from CDN -->
+    <script type="module">
+      import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
+
+      const connectBtn = document.getElementById("connectBtn");
+      const infoBox = document.getElementById("infoBox");
+      const errorMsg = document.getElementById("errorMsg");
+
+      async function connectWallet() {
+        errorMsg.innerText = "";
+
+        // 1. Kiểm tra xem Browser có ví (MetaMask) không
+        if (!window.ethereum) {
+          errorMsg.innerText = "Vui lòng cài đặt MetaMask!";
+          return;
+        }
+
+        try {
+          // 2. Khởi tạo Provider và yêu cầu truy cập account
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const signer = await provider.getSigner();
+          const address = await signer.getAddress();
+
+          // 3. Lấy thông tin số dư và mạng
+          const balance = await provider.getBalance(address);
+          const network = await provider.getNetwork();
+
+          // 4. Hiển thị lên UI
+          document.getElementById("addr").innerText =
+            `${address.substring(0, 6)}...${address.substring(38)}`;
+          document.getElementById("balance").innerText =
+            ethers.formatEther(balance);
+          document.getElementById("network").innerText =
+            network.name + ` (ID: ${network.chainId})`;
+
+          infoBox.style.display = "block";
+          document.getElementById("status").innerText = "Đã kết nối";
+          connectBtn.innerText = "Làm mới dữ liệu";
+        } catch (err) {
+          console.error(err);
+          errorMsg.innerText = "User từ chối kết nối hoặc có lỗi xảy ra.";
+        }
+      }
+
+      connectBtn.addEventListener("click", connectWallet);
+    </script>
+  </body>
+</html>

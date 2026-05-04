@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verzik Sign Action Console</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Inter", "Segoe UI", sans-serif;
+        background: linear-gradient(180deg, #020617, #0f172a 35%, #111827);
+        color: #e2e8f0;
+        overflow-x: hidden;
+      }
+      .app {
+        width: min(1200px, calc(100% - 24px));
+        margin: 20px auto 30px;
+      }
+      .card {
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid #334155;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+        min-width: 0;
+        overflow: hidden;
+      }
+      h1,
+      h2 {
+        margin: 0 0 10px;
+      }
+      .muted {
+        color: #94a3b8;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 14px;
+        min-width: 0;
+      }
+      .stack {
+        display: grid;
+        gap: 14px;
+      }
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 0.9rem;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        background: #020617;
+        border: 1px solid #334155;
+        color: #e2e8f0;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font: inherit;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        min-width: 0;
+      }
+      textarea {
+        min-height: 180px;
+        resize: vertical;
+        font-family: "JetBrains Mono", "Fira Code", monospace;
+        font-size: 0.85rem;
+      }
+      .btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        cursor: pointer;
+        font-weight: 600;
+        color: white;
+      }
+      .primary {
+        background: #2563eb;
+      }
+      .secondary {
+        background: #0ea5e9;
+      }
+      .warn {
+        background: #ea580c;
+      }
+      .ghost {
+        background: #334155;
+      }
+      .log {
+        margin-top: 14px;
+        background: #020617;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 12px;
+        min-height: 240px;
+        max-height: 540px;
+        overflow: auto;
+        font-family: "JetBrains Mono", "Fira Code", monospace;
+        font-size: 0.84rem;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+        word-break: break-all;
+      }
+      .pill {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 999px;
+        border: 1px solid #334155;
+        background: #0b1220;
+        margin-right: 8px;
+        margin-top: 6px;
+        font-size: 0.8rem;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+      }
+      @media (max-width: 960px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <section class="card">
+        <h1>Verzik Sign Action Console</h1>
+        <p class="muted">
+          Test đầy đủ luồng ký: login wallet, gọi relayer API, và gọi
+          wallet-direct actions (user tự trả gas) ngay trong 1 màn hình.
+        </p>
+        <div>
+          <span id="walletPill" class="pill">Wallet: chưa kết nối</span>
+          <span id="rolePill" class="pill">Role: chưa rõ</span>
+          <span id="tenantPill" class="pill">Tenant: auto/default</span>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="stack">
+          <article class="card">
+            <h2>1) Wallet Login</h2>
+            <div class="btns" style="margin-bottom: 10px">
+              <button id="connectBtn" class="primary">Connect Wallet</button>
+              <button id="nonceBtn" class="secondary">Request Nonce</button>
+              <button id="verifyBtn" class="secondary">Sign + Verify</button>
+              <button id="meBtn" class="ghost">Get Me</button>
+              <button id="logoutBtn" class="ghost">Logout</button>
+            </div>
+
+            <label>
+              API Base URL
+              <input
+                id="apiBase"
+                placeholder="http://localhost:3000/api/v1/blockchain"
+              />
+            </label>
+            <label>
+              Protocol Address (for typed-data + wallet-direct)
+              <input id="protocolAddress" placeholder="0x..." />
+            </label>
+            <label>
+              Chain ID
+              <input id="chainId" placeholder="31337" />
+            </label>
+            <label>
+              Address
+              <input id="address" placeholder="0x..." />
+            </label>
+            <label>
+              Bearer Token
+              <textarea id="token" placeholder="Token sau verify"></textarea>
+            </label>
+            <label>
+              Nonce Message
+              <textarea
+                id="nonceMessage"
+                placeholder="Message from /auth/wallet/nonce"
+              ></textarea>
+            </label>
+          </article>
+
+          <article class="card">
+            <h2>2) Action Runner</h2>
+            <label>
+              Chọn Action
+              <select id="actionSelect"></select>
+            </label>
+            <label>
+              Payload JSON
+              <textarea id="payload"></textarea>
+            </label>
+
+            <div class="btns" style="margin-top: 10px">
+              <button id="sampleBtn" class="ghost">Load Sample</button>
+              <button id="signTypedBtn" class="warn">Sign Typed Data</button>
+              <button id="runBtn" class="primary">Run Action</button>
+              <button id="clearBtn" class="ghost">Clear Log</button>
+            </div>
+            <p class="muted" id="actionHint" style="margin-top: 10px"></p>
+          </article>
+        </div>
+
+        <aside class="card">
+          <h2>Debug Log</h2>
+          <p class="muted">
+            Request/response và transaction hash sẽ hiện tại đây.
+          </p>
+          <pre id="log" class="log"></pre>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module">
+      import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
+
+      const state = {
+        provider: null,
+        signer: null,
+        address: "",
+        token: localStorage.getItem("verzik_token") || "",
+      };
+
+      const ui = {
+        apiBase: document.getElementById("apiBase"),
+        protocolAddress: document.getElementById("protocolAddress"),
+        chainId: document.getElementById("chainId"),
+        address: document.getElementById("address"),
+        token: document.getElementById("token"),
+        nonceMessage: document.getElementById("nonceMessage"),
+        actionSelect: document.getElementById("actionSelect"),
+        payload: document.getElementById("payload"),
+        log: document.getElementById("log"),
+        actionHint: document.getElementById("actionHint"),
+        walletPill: document.getElementById("walletPill"),
+        rolePill: document.getElementById("rolePill"),
+        tenantPill: document.getElementById("tenantPill"),
+      };
+
+      const ACTIONS = {
+        createTenant: {
+          mode: "relayer",
+          path: "/sign/create-tenant",
+          sample: {
+            tenantName: "Demo Tenant",
+            treasuryAddress: "0x0000000000000000000000000000000000000001",
+            config: {
+              admin: "0x0000000000000000000000000000000000000002",
+              operatorManager: "0x0000000000000000000000000000000000000003",
+              minStake: "0.1",
+              unstakeCooldown: "86400",
+            },
+          },
+        },
+        setTenantStatus: {
+          mode: "relayer",
+          path: "/sign/tenant-status",
+          sample: { tenantId: "0x", isActive: true },
+        },
+        joinAsOperator: {
+          mode: "wallet-direct",
+          sample: {
+            tenantId: "0x",
+            metadataURI: "ipfs://Qm...",
+            stakeAmount: "0.1",
+          },
+        },
+        topUpStake: {
+          mode: "wallet-direct",
+          sample: { tenantId: "0x", stakeAmount: "0.05" },
+        },
+        updateOperatorMetadata: {
+          mode: "wallet-direct",
+          sample: { tenantId: "0x", metadataURI: "ipfs://Qm-new" },
+        },
+        requestUnstake: { mode: "wallet-direct", sample: { tenantId: "0x" } },
+        executeUnstake: { mode: "wallet-direct", sample: { tenantId: "0x" } },
+        registerWithSignature: {
+          mode: "relayer-signature",
+          path: "/sign/register-with-signature",
+          sample: {
+            payload: {
+              tenantId: "0x",
+              fileHash: "0x",
+              owner: "",
+              cid: "ipfs://Qm...",
+              ciphertextHash: "0x",
+              encryptionMetaHash: "0x",
+              docType: 1,
+              version: 1,
+              nonce: "0",
+              deadline: "9999999999",
+            },
+            signature: "",
+          },
+        },
+        coSignDocumentWithSignature: {
+          mode: "relayer-signature",
+          path: "/sign/cosign-with-signature",
+          sample: {
+            payload: {
+              tenantId: "0x",
+              fileHash: "0x",
+              nonce: "0",
+              deadline: "9999999999",
+            },
+            signature: "",
+          },
+        },
+        setRecoveryDelegate: {
+          mode: "wallet-direct",
+          sample: {
+            tenantId: "0x",
+            delegate: "0x0000000000000000000000000000000000000004",
+          },
+        },
+        recoverOperatorByDelegate: {
+          mode: "wallet-direct",
+          sample: {
+            tenantId: "0x",
+            lostOperator: "0x0000000000000000000000000000000000000005",
+            reason: "recovery",
+          },
+        },
+        setTreasury: {
+          mode: "relayer",
+          path: "/sign/treasury",
+          sample: {
+            tenantId: "0x",
+            newTreasury: "0x0000000000000000000000000000000000000006",
+          },
+        },
+        revokeDocument: {
+          mode: "relayer",
+          path: "/sign/revoke-document",
+          sample: { tenantId: "0x", fileHash: "0x", reason: "revoke" },
+        },
+        slashOperator: {
+          mode: "relayer",
+          path: "/sign/slash-operator",
+          sample: {
+            tenantId: "0x",
+            operator: "0x0000000000000000000000000000000000000007",
+            reason: "violation",
+          },
+        },
+        softSlashOperator: {
+          mode: "relayer",
+          path: "/sign/soft-slash-operator",
+          sample: {
+            tenantId: "0x",
+            operator: "0x0000000000000000000000000000000000000007",
+            violationCode: "KYC_FAIL",
+            reason: "policy",
+          },
+        },
+        setOperatorStatus: {
+          mode: "relayer",
+          path: "/sign/operator-status",
+          sample: {
+            tenantId: "0x",
+            operator: "0x0000000000000000000000000000000000000007",
+            isActive: true,
+            reason: "manual",
+          },
+        },
+        recoverOperatorByAdmin: {
+          mode: "relayer",
+          path: "/sign/recover-by-admin",
+          sample: {
+            tenantId: "0x",
+            lostOperator: "0x0000000000000000000000000000000000000008",
+            newOperator: "0x0000000000000000000000000000000000000009",
+            reason: "admin recovery",
+          },
+        },
+        setCoSignPolicy: {
+          mode: "relayer",
+          path: "/sign/cosign-policy",
+          sample: {
+            tenantId: "0x",
+            docType: 1,
+            enabled: true,
+            minStake: "0.1",
+            minSigners: "2",
+            requiredRoleMask: "1",
+          },
+        },
+        setCoSignOperator: {
+          mode: "relayer",
+          path: "/sign/cosign-operator",
+          sample: {
+            tenantId: "0x",
+            docType: 1,
+            operator: "0x0000000000000000000000000000000000000007",
+            whitelisted: true,
+            roleId: 1,
+          },
+        },
+        setMinOperatorStake: {
+          mode: "relayer",
+          path: "/sign/min-operator-stake",
+          sample: { tenantId: "0x", newMinOperatorStake: "0.15" },
+        },
+        setUnstakeCooldown: {
+          mode: "relayer",
+          path: "/sign/unstake-cooldown",
+          sample: { tenantId: "0x", newUnstakeCooldown: "172800" },
+        },
+        setViolationPenalty: {
+          mode: "relayer",
+          path: "/sign/violation-penalty",
+          sample: {
+            tenantId: "0x",
+            violationCode: "KYC_FAIL",
+            penaltyBps: 500,
+          },
+        },
+      };
+
+      const WALLET_DIRECT_ABI = [
+        "function joinAsOperator(bytes32 tenantId, string metadataURI) payable",
+        "function topUpStake(bytes32 tenantId) payable",
+        "function updateOperatorMetadata(bytes32 tenantId, string metadataURI)",
+        "function requestUnstake(bytes32 tenantId)",
+        "function executeUnstake(bytes32 tenantId)",
+        "function setRecoveryDelegate(bytes32 tenantId, address delegate)",
+        "function recoverOperatorByDelegate(bytes32 tenantId, address lostOperator, string reason)",
+      ];
+
+      function log(title, payload) {
+        const stamp = new Date().toISOString();
+        const text =
+          typeof payload === "string"
+            ? payload
+            : JSON.stringify(payload, null, 2);
+        ui.log.textContent = `[${stamp}] ${title}\n${text}\n\n${ui.log.textContent}`;
+      }
+
+      function setPill(el, label, value) {
+        el.textContent = `${label}: ${value || "-"}`;
+      }
+
+      function parsePayload() {
+        try {
+          return JSON.parse(ui.payload.value || "{}");
+        } catch {
+          throw new Error("Payload JSON không hợp lệ");
+        }
+      }
+
+      function getSelectedAction() {
+        const action = ui.actionSelect.value;
+        const cfg = ACTIONS[action];
+        if (!cfg) throw new Error("Action không hợp lệ");
+        return { action, cfg };
+      }
+
+      async function apiRequest(path, method, body) {
+        const token = ui.token.value.trim();
+        if (!token) throw new Error("Thiếu bearer token");
+
+        const res = await fetch(
+          `${ui.apiBase.value.replace(/\/$/, "")}${path}`,
+          {
+            method,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: body ? JSON.stringify(body) : undefined,
+          },
+        );
+
+        const data = await res.json().catch(() => ({}));
+        log(`${method} ${path}`, data);
+
+        if (!res.ok) {
+          throw new Error(data?.error?.message || `HTTP ${res.status}`);
+        }
+        return data;
+      }
+
+      async function connectWallet() {
+        if (!window.ethereum) throw new Error("Cần MetaMask");
+        state.provider = new ethers.BrowserProvider(window.ethereum);
+        await state.provider.send("eth_requestAccounts", []);
+        state.signer = await state.provider.getSigner();
+        state.address = await state.signer.getAddress();
+        ui.address.value = state.address;
+        setPill(ui.walletPill, "Wallet", state.address);
+
+        const network = await state.provider.getNetwork();
+        if (!ui.chainId.value) ui.chainId.value = String(network.chainId);
+      }
+
+      async function requestNonce() {
+        const address = ui.address.value.trim() || state.address;
+        if (!address) throw new Error("Hãy connect wallet trước");
+
+        const res = await fetch(
+          `${ui.apiBase.value.replace(/\/$/, "")}/auth/wallet/nonce`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ address }),
+          },
+        );
+        const data = await res.json();
+        log("POST /auth/wallet/nonce", data);
+        if (!res.ok) throw new Error(data?.error?.message || "Lỗi nonce");
+        ui.nonceMessage.value = data.data.message;
+      }
+
+      async function signAndVerify() {
+        if (!state.signer) await connectWallet();
+        if (!ui.nonceMessage.value.trim()) await requestNonce();
+
+        const message = ui.nonceMessage.value.trim();
+        const signature = await state.signer.signMessage(message);
+        const address = ui.address.value.trim() || state.address;
+
+        const res = await fetch(
+          `${ui.apiBase.value.replace(/\/$/, "")}/auth/wallet/verify`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ address, signature }),
+          },
+        );
+        const data = await res.json();
+        log("POST /auth/wallet/verify", data);
+        if (!res.ok) throw new Error(data?.error?.message || "Lỗi verify");
+
+        ui.token.value = data.data.token;
+        localStorage.setItem("verzik_token", data.data.token);
+        setPill(ui.rolePill, "Role", data.data.role || "unknown");
+        setPill(ui.tenantPill, "Tenant", data.data.tenantId || "auto/default");
+      }
+
+      async function getMe() {
+        const data = await apiRequest("/auth/wallet/me", "GET");
+        setPill(ui.rolePill, "Role", data.data.role || "unknown");
+        setPill(ui.tenantPill, "Tenant", data.data.tenantId || "auto/default");
+      }
+
+      async function logout() {
+        await apiRequest("/auth/wallet/logout", "POST", {});
+        ui.token.value = "";
+        localStorage.removeItem("verzik_token");
+      }
+
+      function fillActionOptions() {
+        const keys = Object.keys(ACTIONS);
+        ui.actionSelect.innerHTML = keys
+          .map((k) => `<option value="${k}">${k}</option>`)
+          .join("");
+      }
+
+      function loadSample() {
+        const { cfg } = getSelectedAction();
+        // Deep clone sample then replace deadline placeholders with now + 1 hour
+        const nowSec = Math.floor(Date.now() / 1000);
+        const deadline = String(nowSec + 3600);
+        const sample = JSON.parse(JSON.stringify(cfg.sample));
+        if (sample?.payload?.deadline !== undefined) {
+          sample.payload.deadline = deadline;
+        }
+        if (sample?.deadline !== undefined) {
+          sample.deadline = deadline;
+        }
+        ui.payload.value = JSON.stringify(sample, null, 2);
+        renderActionHint();
+      }
+
+      function renderActionHint() {
+        const { action, cfg } = getSelectedAction();
+        const note =
+          cfg.mode === "wallet-direct"
+            ? "Wallet-direct: ví user gửi tx trực tiếp và tự trả gas."
+            : cfg.mode === "relayer-signature"
+              ? "Relayer-signature: user ký typed-data, backend relay tx và trả gas."
+              : "Relayer: backend signer env gửi tx và trả gas.";
+        ui.actionHint.textContent = `${action} -> ${note}`;
+      }
+
+      async function signTypedDataForSelectedAction() {
+        if (!state.signer) await connectWallet();
+
+        const { action } = getSelectedAction();
+        const body = parsePayload();
+        const payload = body.payload;
+        if (!payload) throw new Error("Payload phải có field payload để ký");
+
+        const chainId = BigInt(ui.chainId.value.trim() || "31337");
+        const verifyingContract = ui.protocolAddress.value.trim();
+        if (!verifyingContract) throw new Error("Thiếu protocol address");
+
+        const domain = {
+          name: "VoucherProtocol",
+          version: "1",
+          chainId,
+          verifyingContract,
+        };
+
+        let types;
+        if (action === "registerWithSignature") {
+          types = {
+            Register: [
+              { name: "tenantId", type: "bytes32" },
+              { name: "fileHash", type: "bytes32" },
+              { name: "owner", type: "address" },
+              { name: "cid", type: "string" },
+              { name: "ciphertextHash", type: "bytes32" },
+              { name: "encryptionMetaHash", type: "bytes32" },
+              { name: "docType", type: "uint32" },
+              { name: "version", type: "uint32" },
+              { name: "nonce", type: "uint256" },
+              { name: "deadline", type: "uint256" },
+            ],
+          };
+        } else if (action === "coSignDocumentWithSignature") {
+          types = {
+            CoSign: [
+              { name: "tenantId", type: "bytes32" },
+              { name: "fileHash", type: "bytes32" },
+              { name: "nonce", type: "uint256" },
+              { name: "deadline", type: "uint256" },
+            ],
+          };
+        } else {
+          throw new Error("Action này không cần typed-data signature");
+        }
+
+        const signature = await state.signer.signTypedData(
+          domain,
+          types,
+          payload,
+        );
+        body.signature = signature;
+        ui.payload.value = JSON.stringify(body, null, 2);
+        log("TypedData Signed", { action, signature });
+      }
+
+      async function runSelectedAction() {
+        const { action, cfg } = getSelectedAction();
+        const body = parsePayload();
+
+        if (cfg.mode === "relayer" || cfg.mode === "relayer-signature") {
+          await apiRequest(cfg.path, "POST", body);
+          return;
+        }
+
+        if (!state.signer) await connectWallet();
+        const protocolAddress = ui.protocolAddress.value.trim();
+        if (!protocolAddress) throw new Error("Thiếu protocol address");
+
+        const contract = new ethers.Contract(
+          protocolAddress,
+          WALLET_DIRECT_ABI,
+          state.signer,
+        );
+        let tx;
+
+        if (action === "joinAsOperator") {
+          tx = await contract.joinAsOperator(body.tenantId, body.metadataURI, {
+            value: ethers.parseEther(String(body.stakeAmount)),
+          });
+        } else if (action === "topUpStake") {
+          tx = await contract.topUpStake(body.tenantId, {
+            value: ethers.parseEther(String(body.stakeAmount)),
+          });
+        } else if (action === "updateOperatorMetadata") {
+          tx = await contract.updateOperatorMetadata(
+            body.tenantId,
+            body.metadataURI,
+          );
+        } else if (action === "requestUnstake") {
+          tx = await contract.requestUnstake(body.tenantId);
+        } else if (action === "executeUnstake") {
+          tx = await contract.executeUnstake(body.tenantId);
+        } else if (action === "setRecoveryDelegate") {
+          tx = await contract.setRecoveryDelegate(body.tenantId, body.delegate);
+        } else if (action === "recoverOperatorByDelegate") {
+          tx = await contract.recoverOperatorByDelegate(
+            body.tenantId,
+            body.lostOperator,
+            body.reason,
+          );
+        } else {
+          throw new Error("Wallet-direct action chưa được map");
+        }
+
+        log(`WALLET TX SENT ${action}`, { hash: tx.hash });
+        const receipt = await tx.wait();
+        log(`WALLET TX MINED ${action}`, {
+          hash: receipt.hash,
+          blockNumber: receipt.blockNumber,
+        });
+      }
+
+      async function safeRun(fn) {
+        try {
+          await fn();
+        } catch (error) {
+          log("ERROR", { message: error?.message || String(error) });
+          alert(error?.message || String(error));
+        }
+      }
+
+      document
+        .getElementById("connectBtn")
+        .addEventListener("click", () => safeRun(connectWallet));
+      document
+        .getElementById("nonceBtn")
+        .addEventListener("click", () => safeRun(requestNonce));
+      document
+        .getElementById("verifyBtn")
+        .addEventListener("click", () => safeRun(signAndVerify));
+      document
+        .getElementById("meBtn")
+        .addEventListener("click", () => safeRun(getMe));
+      document
+        .getElementById("logoutBtn")
+        .addEventListener("click", () => safeRun(logout));
+      document
+        .getElementById("sampleBtn")
+        .addEventListener("click", loadSample);
+      document
+        .getElementById("signTypedBtn")
+        .addEventListener("click", () =>
+          safeRun(signTypedDataForSelectedAction),
+        );
+      document
+        .getElementById("runBtn")
+        .addEventListener("click", () => safeRun(runSelectedAction));
+      document.getElementById("clearBtn").addEventListener("click", () => {
+        ui.log.textContent = "";
+      });
+      ui.actionSelect.addEventListener("change", renderActionHint);
+
+      function init() {
+        ui.apiBase.value = `${location.origin}/api/v1/blockchain`;
+        ui.token.value = state.token;
+        fillActionOptions();
+        loadSample();
+      }
+
+      init();
+    </script>
+  </body>
+</html>

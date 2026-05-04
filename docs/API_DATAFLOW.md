@@ -325,10 +325,10 @@ Dataflow:
 
 ## 7. Cac File Co San Nhung Chua Nam Trong Runtime Path
 
-- `src/controllers/blockchain.set.controller.ts`: dang placeholder, chua expose endpoint.
-- `src/services/blockchain.set.service.ts`: co method `createTenant`, nhung chua duoc route/controller runtime goi.
+- `src/controllers/blockchain.sign.controller.ts`: da expose day du write/sign endpoint.
+- `src/services/blockchain.sign.service.ts`: da duoc route/controller runtime goi thong qua sign APIs.
 
-Nghia la hien tai backend nay tap trung query/permission API, chua mo write-state API qua HTTP.
+Nghia la backend hien tai da tach ro query/permission APIs va write/sign APIs qua HTTP.
 
 ## 8. Coverage Emit -> SDK -> Backend
 

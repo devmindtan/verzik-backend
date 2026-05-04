@@ -1,0 +1,22 @@
+info:
+  name: auth/wallet/verify
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base_url}}/auth/wallet/verify"
+  body:
+    type: json
+    data: |-
+      {
+        "address":"0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199",
+        "signature":""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

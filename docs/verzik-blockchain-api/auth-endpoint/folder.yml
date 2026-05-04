@@ -1,5 +1,5 @@
 info:
-  name: others-endpoint
+  name: auth-endpoint
   type: folder
   seq: 4
 

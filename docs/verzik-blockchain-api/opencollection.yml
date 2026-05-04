@@ -15,6 +15,9 @@ config:
       bypassProxy: ""
 
 request:
+  auth:
+    type: bearer
+    token: 205cb0f99f68de2d9258b12985c2214ab1dba1bde1f8a650827fa75f726d6fd1
   variables:
     - name: tenant_id
       value: "0xc5396dec48dd369660d2dcc0514727e58caf1655ff0c8c6c9d26f2e6e10464f6"

@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{base_url}}/transaction?txHash=0x0d06d1e67e5d9a0d722143e0025c0670c5909ab04a6548b3e437c380b3b11b6d"
+  url: "{{base_url}}/transaction?txHash=0x243740d0602a319ac3b48d80aee3c1381bdb10118e79a4a8a60e3124c6c6d9a8"
   params:
     - name: txHash
-      value: "0x0d06d1e67e5d9a0d722143e0025c0670c5909ab04a6548b3e437c380b3b11b6d"
+      value: "0x243740d0602a319ac3b48d80aee3c1381bdb10118e79a4a8a60e3124c6c6d9a8"
       type: query
   auth: inherit
 

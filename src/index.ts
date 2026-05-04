@@ -10,6 +10,8 @@ import path from "path";
 import cors from "cors";
 import blockchainQueryApi from "./routes/blockchain.query.api";
 import blockchainPermissionApi from "./routes/blockchain.permission.api";
+import blockchainSignApi from "./routes/blockchain.sign.api";
+import walletAuthApi from "./routes/wallet.auth.api";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
 import { successResponse } from "./utils/response";
 
@@ -64,6 +66,8 @@ app.get("/health", (req: Request, res: Response) => {
  */
 app.use("/api/v1/blockchain", blockchainQueryApi);
 app.use("/api/v1/blockchain", blockchainPermissionApi);
+app.use("/api/v1/blockchain", blockchainSignApi);
+app.use("/api/v1/blockchain", walletAuthApi);
 
 // 404 handler (must be before error handler)
 app.use(notFoundHandler);
